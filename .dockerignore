@@ -1,0 +1,13 @@
+venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+.env
+.git
+data/recallos.db
+.DS_Store
+*.egg-info
+build/
+dist/
