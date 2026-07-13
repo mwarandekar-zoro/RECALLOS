@@ -1,0 +1,692 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RecallOS - Memory Search Engine</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 100%);
+            color: #e0e0e0;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .container {
+            display: grid;
+            grid-template-columns: 280px 1fr;
+            min-height: 100vh;
+            gap: 0;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            background: rgba(15, 15, 30, 0.8);
+            backdrop-filter: blur(10px);
+            border-right: 1px solid rgba(139, 92, 246, 0.2);
+            padding: 24px;
+            overflow-y: auto;
+            position: relative;
+        }
+
+        .sidebar::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(139, 92, 246, 0.4), transparent);
+        }
+
+        .logo {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 32px;
+            background: linear-gradient(135deg, #a78bfa 0%, #6366f1 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .logo::before {
+            content: '⚡';
+            font-size: 24px;
+        }
+
+        .section-title {
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #8b5cf6;
+            margin-top: 24px;
+            margin-bottom: 12px;
+            opacity: 0.7;
+        }
+
+        .recent-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .recent-item {
+            padding: 10px 12px;
+            background: rgba(99, 102, 241, 0.1);
+            border: 1px solid rgba(139, 92, 246, 0.2);
+            border-radius: 8px;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            color: #b0b0d0;
+        }
+
+        .recent-item:hover {
+            background: rgba(139, 92, 246, 0.2);
+            border-color: rgba(139, 92, 246, 0.4);
+            color: #e0e0e0;
+            transform: translateX(4px);
+        }
+
+        /* Main Content */
+        .main {
+            display: flex;
+            flex-direction: column;
+            padding: 40px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 60px;
+        }
+
+        .title {
+            font-size: 48px;
+            font-weight: 700;
+            margin-bottom: 12px;
+            background: linear-gradient(135deg, #a78bfa 0%, #6366f1 0%, #60a5fa 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .subtitle {
+            font-size: 16px;
+            color: #9090b0;
+            font-weight: 400;
+        }
+
+        /* Search Area */
+        .search-container {
+            margin-bottom: 40px;
+        }
+
+        .search-wrapper {
+            position: relative;
+            background: rgba(30, 30, 60, 0.8);
+            border: 2px solid rgba(139, 92, 246, 0.3);
+            border-radius: 16px;
+            padding: 2px;
+            background-clip: padding-box;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .search-wrapper:focus-within {
+            border-color: rgba(139, 92, 246, 0.8);
+            background: rgba(30, 30, 80, 0.9);
+            box-shadow: 0 0 30px rgba(139, 92, 246, 0.3);
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 16px 20px;
+            background: transparent;
+            border: none;
+            font-size: 16px;
+            color: #e0e0e0;
+            outline: none;
+        }
+
+        .search-input::placeholder {
+            color: #6b6b85;
+        }
+
+        .search-icon {
+            position: absolute;
+            right: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 18px;
+            color: #8b5cf6;
+            pointer-events: none;
+        }
+
+        /* Filters */
+        .filters {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 40px;
+            flex-wrap: wrap;
+        }
+
+        .filter-btn {
+            padding: 10px 20px;
+            background: rgba(99, 102, 241, 0.1);
+            border: 1px solid rgba(139, 92, 246, 0.3);
+            border-radius: 24px;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            color: #b0b0d0;
+        }
+
+        .filter-btn:hover {
+            background: rgba(139, 92, 246, 0.2);
+            border-color: rgba(139, 92, 246, 0.5);
+            color: #e0e0e0;
+        }
+
+        .filter-btn.active {
+            background: rgba(139, 92, 246, 0.4);
+            border-color: rgba(139, 92, 246, 0.8);
+            color: #ffffff;
+        }
+
+        /* Results */
+        .results-container {
+            flex: 1;
+        }
+
+        .results-header {
+            font-size: 14px;
+            color: #8b5cf6;
+            margin-bottom: 20px;
+            font-weight: 500;
+        }
+
+        .results-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 20px;
+            animation: fadeIn 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .result-card {
+            background: rgba(30, 30, 60, 0.6);
+            border: 1px solid rgba(139, 92, 246, 0.2);
+            border-radius: 12px;
+            padding: 20px;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            backdrop-filter: blur(10px);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .result-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(139, 92, 246, 0.1), transparent);
+            transition: left 0.5s;
+        }
+
+        .result-card:hover {
+            background: rgba(40, 40, 80, 0.8);
+            border-color: rgba(139, 92, 246, 0.5);
+            transform: translateY(-4px);
+        }
+
+        .result-card:hover::before {
+            left: 100%;
+        }
+
+        .result-icon {
+            font-size: 32px;
+            margin-bottom: 12px;
+        }
+
+        .result-name {
+            font-size: 16px;
+            font-weight: 600;
+            color: #e0e0e0;
+            margin-bottom: 8px;
+            word-break: break-word;
+        }
+
+        .result-preview {
+            font-size: 13px;
+            color: #9090b0;
+            line-height: 1.5;
+            margin-bottom: 12px;
+            max-height: 60px;
+            overflow: hidden;
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+        }
+
+        .result-meta {
+            font-size: 12px;
+            color: #6b6b85;
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #6b6b85;
+        }
+
+        .empty-icon {
+            font-size: 64px;
+            margin-bottom: 20px;
+            opacity: 0.5;
+        }
+
+        .empty-text {
+            font-size: 16px;
+            margin-bottom: 8px;
+        }
+
+        .empty-hint {
+            font-size: 13px;
+            opacity: 0.7;
+        }
+
+        .status {
+            padding: 12px 16px;
+            background: rgba(99, 102, 241, 0.1);
+            border: 1px solid rgba(99, 102, 241, 0.3);
+            border-radius: 8px;
+            font-size: 13px;
+            color: #a78bfa;
+            margin-bottom: 20px;
+            display: none;
+            animation: slideDown 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .status.show {
+            display: block;
+        }
+
+        .status.loading {
+            background: rgba(59, 130, 246, 0.1);
+            border-color: rgba(59, 130, 246, 0.3);
+            color: #60a5fa;
+        }
+
+        .status.error {
+            background: rgba(239, 68, 68, 0.1);
+            border-color: rgba(239, 68, 68, 0.3);
+            color: #f87171;
+        }
+
+        .status.success {
+            background: rgba(34, 197, 94, 0.1);
+            border-color: rgba(34, 197, 94, 0.3);
+            color: #86efac;
+        }
+
+        .loader {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border: 2px solid rgba(96, 165, 250, 0.3);
+            border-top-color: #60a5fa;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin-right: 8px;
+            vertical-align: middle;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: rgba(99, 102, 241, 0.05);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: rgba(139, 92, 246, 0.3);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(139, 92, 246, 0.5);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .container {
+                grid-template-columns: 1fr;
+            }
+
+            .sidebar {
+                grid-column: 1;
+                grid-row: 1;
+                max-height: 60px;
+                overflow-x: auto;
+                overflow-y: hidden;
+                border-right: none;
+                border-bottom: 1px solid rgba(139, 92, 246, 0.2);
+                padding: 12px 20px;
+                display: flex;
+                align-items: center;
+                gap: 20px;
+            }
+
+            .section-title {
+                display: none;
+            }
+
+            .recent-list {
+                flex-direction: row;
+                gap: 8px;
+            }
+
+            .logo {
+                margin-bottom: 0;
+            }
+
+            .main {
+                grid-column: 1;
+                grid-row: 2;
+                padding: 24px;
+            }
+
+            .title {
+                font-size: 32px;
+            }
+
+            .results-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="logo">RecallOS</div>
+            <div class="section-title">Recent Searches</div>
+            <div class="recent-list" id="recentList">
+                <div class="recent-item" onclick="searchQuery(this.textContent)">Stack overflow</div>
+                <div class="recent-item" onclick="searchQuery(this.textContent)">Python async</div>
+                <div class="recent-item" onclick="searchQuery(this.textContent)">Database design</div>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main">
+            <div class="header">
+                <h1 class="title">RecallOS</h1>
+                <p class="subtitle">Your personal memory search engine</p>
+            </div>
+
+            <div class="search-container">
+                <div class="search-wrapper">
+                    <input
+                        type="text"
+                        class="search-input"
+                        id="searchInput"
+                        placeholder="Search your memories... (Stack, Queue, API, etc.)"
+                        autocomplete="off"
+                    >
+                    <span class="search-icon">🔍</span>
+                </div>
+            </div>
+
+            <div class="filters">
+                <button class="filter-btn active" onclick="setFilter('all')">All</button>
+                <button class="filter-btn" onclick="setFilter('pdf')">📄 PDFs</button>
+                <button class="filter-btn" onclick="setFilter('word')">📝 Word</button>
+                <button class="filter-btn" onclick="setFilter('image')">🖼️ Images</button>
+                <button class="filter-btn" onclick="setFilter('code')">💻 Code</button>
+            </div>
+
+            <div class="status" id="status"></div>
+
+            <div class="results-container">
+                <div id="resultsHeader"></div>
+                <div class="results-grid" id="results">
+                    <div class="empty-state">
+                        <div class="empty-icon">🎯</div>
+                        <div class="empty-text">Start searching your memories</div>
+                        <div class="empty-hint">Type keywords to find PDFs, notes, images, and more</div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:8000';
+        let currentFilter = 'all';
+        let allResults = [];
+
+        const searchInput = document.getElementById('searchInput');
+        const resultsContainer = document.getElementById('results');
+        const statusElement = document.getElementById('status');
+        const resultsHeader = document.getElementById('resultsHeader');
+
+        // Search on input
+        searchInput.addEventListener('keydown', async (e) => {
+            if (e.key === 'Enter') {
+                await performSearch(searchInput.value);
+            }
+        });
+
+        // Auto-search after typing stops
+        let searchTimeout;
+        searchInput.addEventListener('input', () => {
+            clearTimeout(searchTimeout);
+            if (searchInput.value.length > 1) {
+                searchTimeout = setTimeout(() => {
+                    performSearch(searchInput.value);
+                }, 300);
+            }
+        });
+
+        async function performSearch(query) {
+            if (!query.trim()) return;
+
+            showStatus(`<span class="loader"></span>Searching...`, 'loading');
+            allResults = [];
+
+            try {
+                const response = await fetch(`${API_BASE}/search?q=${encodeURIComponent(query)}`);
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+
+                const data = await response.json();
+                allResults = data.results || [];
+
+                displayResults();
+                showStatus(`Found ${allResults.length} result${allResults.length !== 1 ? 's' : ''}`, 'success');
+
+                // Add to recent
+                addToRecent(query);
+            } catch (error) {
+                showStatus(`❌ Error: ${error.message}`, 'error');
+                resultsContainer.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-icon">⚠️</div>
+                        <div class="empty-text">Search failed</div>
+                        <div class="empty-hint">Make sure the server is running at ${API_BASE}</div>
+                    </div>
+                `;
+            }
+        }
+
+        function displayResults() {
+            const filtered = currentFilter === 'all' 
+                ? allResults 
+                : allResults.filter(r => getFileType(r.extension) === currentFilter);
+
+            if (filtered.length === 0) {
+                resultsHeader.innerHTML = '';
+                resultsContainer.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-icon">🚫</div>
+                        <div class="empty-text">No results for this filter</div>
+                        <div class="empty-hint">Try a different search or filter</div>
+                    </div>
+                `;
+                return;
+            }
+
+            resultsHeader.innerHTML = `<div class="results-header">${filtered.length} result${filtered.length !== 1 ? 's' : ''}</div>`;
+
+            resultsContainer.innerHTML = filtered.map(result => `
+                <div class="result-card">
+                    <div class="result-icon">${getFileIcon(result.extension)}</div>
+                    <div class="result-name">${escapeHtml(result.name)}</div>
+                    <div class="result-preview">${escapeHtml(result.snippet || 'No preview available')}</div>
+                    <div class="result-meta">
+                        <span>${result.extension.toUpperCase()}</span>
+                        <span>${result.size ? `${Math.round(result.size / 1024)} KB` : ''}</span>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function getFileIcon(extension) {
+            const type = extension.toLowerCase().replace('.', '');
+            const icons = {
+                pdf: '📄',
+                txt: '📝',
+                md: '📋',
+                docx: '📘',
+                jpg: '🖼️',
+                png: '🖼️',
+                gif: '🎬',
+                mp3: '🎵',
+                py: '🐍',
+                js: '⚙️',
+                java: '☕',
+                default: '📁'
+            };
+            return icons[type] || icons.default;
+        }
+
+        function getFileType(extension) {
+            const type = extension.toLowerCase().replace('.', '');
+            if (type === 'pdf') return 'pdf';
+            if (type === 'docx') return 'word';
+            if (['jpg', 'png', 'gif'].includes(type)) return 'image';
+            if (['py', 'js', 'java', 'cpp'].includes(type)) return 'code';
+            return 'all';
+        }
+
+        function setFilter(filter) {
+            currentFilter = filter;
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.classList.remove('active');
+                if (btn.textContent.toLowerCase().includes(filter) || (filter === 'all' && btn.textContent === 'All')) {
+                    btn.classList.add('active');
+                }
+            });
+            displayResults();
+        }
+
+        function searchQuery(query) {
+            searchInput.value = query;
+            performSearch(query);
+        }
+
+        function addToRecent(query) {
+            const recentList = document.getElementById('recentList');
+            const isDuplicate = Array.from(recentList.children).some(item => item.textContent === query);
+            if (!isDuplicate) {
+                const item = document.createElement('div');
+                item.className = 'recent-item';
+                item.textContent = query;
+                item.onclick = () => searchQuery(query);
+                recentList.insertBefore(item, recentList.firstChild);
+                if (recentList.children.length > 5) {
+                    recentList.lastChild.remove();
+                }
+            }
+        }
+
+        function showStatus(message, type = 'success') {
+            statusElement.innerHTML = message;
+            statusElement.className = `status show ${type}`;
+            setTimeout(() => {
+                statusElement.classList.remove('show');
+            }, 4000);
+        }
+
+        function escapeHtml(text) {
+            const map = {
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                "'": '&#039;'
+            };
+            return text.replace(/[&<>"']/g, m => map[m]);
+        }
+
+        // Check server on load
+        window.addEventListener('load', async () => {
+            try {
+                const response = await fetch(`${API_BASE}/`);
+                if (response.ok) {
+                    showStatus('✅ Connected to RecallOS', 'success');
+                }
+            } catch (error) {
+                showStatus(`⚠️ Cannot connect to server at ${API_BASE}`, 'error');
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,6 +1,9 @@
 from pathlib import Path
 
 from fastapi import FastAPI, Query
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
 
 from Backend.scanner import scan_folder
 from Backend.extractor import extract_text
@@ -12,6 +15,15 @@ app = FastAPI(
     title="RecallOS API",
     description="Local search engine for your digital life",
     version="0.1.0"
+)
+
+# Enable CORS
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 
@@ -75,4 +87,12 @@ def search(q: str = Query(..., min_length=1)):
         "total_results": len(results),
         "results": results
     }
-    
+
+
+@app.get("/ui")
+def serve_ui():
+    """Serve the RecallOS UI"""
+    ui_file = BASE_DIR / "index.html"
+    if ui_file.exists():
+        return FileResponse(ui_file, media_type="text/html")
+    return {"error": "UI file not found"}
