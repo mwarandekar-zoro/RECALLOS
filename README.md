@@ -200,6 +200,42 @@ Then visit: `http://<your-ip>:8000/ui`
 - [ ] Audio/video metadata extraction
 - [ ] Docker containerization
 
+## 🐳 Docker
+
+You can run RecallOS in a container for a reproducible environment.
+
+Build the image:
+```bash
+docker build -t recallos:latest .
+```
+
+Run the container (mount `data/` so the SQLite DB persists):
+
+```bash
+# Linux / macOS
+docker run --rm -p 8000:8000 -v $(pwd)/data:/home/appuser/app/data recallos:latest
+
+# Windows PowerShell
+docker run --rm -p 8000:8000 -v ${PWD}\\data:/home/appuser/app/data recallos:latest
+```
+
+Open the UI at `http://localhost:8000/ui`.
+
+Optional `docker-compose.yml` (recommended for local development): create a `docker-compose.yml` with the following content and run `docker compose up --build`:
+
+```yaml
+version: '3.8'
+services:
+	recallos:
+		build: .
+		ports:
+			- "8000:8000"
+		volumes:
+			- ./data:/home/appuser/app/data
+		restart: unless-stopped
+```
+
+
 ## 📧 Contributing
 
 Feel free to fork, modify, and improve RecallOS!

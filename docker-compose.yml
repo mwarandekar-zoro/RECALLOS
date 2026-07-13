@@ -1,0 +1,10 @@
+version: '3.8'
+
+services:
+  recallos:
+    build: .
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./data:/home/appuser/app/data
+    restart: unless-stopped
