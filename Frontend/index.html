@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>RecallOS - Memory Search Engine</title>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+  <div class="container">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="logo">RecallOS</div>
+      <div class="section-title">Recent Searches</div>
+      <div class="recent-list" id="recentList">
+        <div class="recent-item" onclick="searchQuery(this.textContent)">Stack overflow</div>
+        <div class="recent-item" onclick="searchQuery(this.textContent)">Python async</div>
+        <div class="recent-item" onclick="searchQuery(this.textContent)">Database design</div>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main">
+      <div class="header">
+        <h1 class="title">RecallOS</h1>
+        <p class="subtitle">Your personal memory search engine</p>
+      </div>
+
+      <div class="search-container">
+        <div class="search-wrapper">
+          <input
+            type="text"
+            class="search-input"
+            id="searchInput"
+            placeholder="Search your memories... (Stack, Queue, API, etc.)"
+            autocomplete="off"
+          >
+          <span class="search-icon">🔍</span>
+        </div>
+      </div>
+
+      <div class="filters">
+        <button class="filter-btn active" onclick="setFilter('all')">All</button>
+        <button class="filter-btn" onclick="setFilter('pdf')">📄 PDFs</button>
+        <button class="filter-btn" onclick="setFilter('word')">📝 Word</button>
+        <button class="filter-btn" onclick="setFilter('image')">🖼️ Images</button>
+        <button class="filter-btn" onclick="setFilter('code')">💻 Code</button>
+      </div>
+
+      <div class="status" id="status"></div>
+
+      <div class="results-container">
+        <div id="resultsHeader"></div>
+        <div class="results-grid" id="results">
+          <div class="empty-state">
+            <div class="empty-icon">🎯</div>
+            <div class="empty-text">Start searching your memories</div>
+            <div class="empty-hint">Type keywords to find PDFs, notes, images, and more</div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="/static/script.js"></script>
+</body>
+</html>

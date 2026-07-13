@@ -30,6 +30,11 @@ app.add_middleware(
 BASE_DIR = Path(__file__).resolve().parent.parent
 TEST_FILES_DIR = BASE_DIR / "test_files"
 
+# Serve frontend static files from the `frontend` directory
+FRONTEND_DIR = BASE_DIR / "frontend"
+if FRONTEND_DIR.exists():
+    app.mount("/static", StaticFiles(directory=FRONTEND_DIR), name="static")
+
 
 @app.on_event("startup")
 def startup():
@@ -92,7 +97,7 @@ def search(q: str = Query(..., min_length=1)):
 @app.get("/ui")
 def serve_ui():
     """Serve the RecallOS UI"""
-    ui_file = BASE_DIR / "index.html"
+    ui_file = FRONTEND_DIR / "index.html"
     if ui_file.exists():
         return FileResponse(ui_file, media_type="text/html")
     return {"error": "UI file not found"}
