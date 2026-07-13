@@ -41,7 +41,21 @@ python -m uvicorn Backend.app:app --reload --host 0.0.0.0
 
 4. **Open the UI:**
 Visit `http://localhost:8000/ui` in your browser
+## 🧩 Python CLI Usage
 
+RecallOS now includes a small command-line interface in `Backend/cli.py`.
+
+### Index a folder:
+```bash
+python -m Backend.cli index --folder test_files
+```
+
+### Search indexed content:
+```bash
+python -m Backend.cli search --query "memory"
+```
+
+> Tip: Run `python -m Backend.cli --help` for available commands.
 ## 📖 Usage
 
 ### Search
