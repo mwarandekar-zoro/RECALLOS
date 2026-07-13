@@ -64,8 +64,11 @@ Visit `http://localhost:8000/ui` in your browser
 
 ```
 RecallOS/
-├── index.html              # Frontend UI (React-free SPA)
-├── requirements.txt        # Python dependencies
+├── Frontend/
+│   ├── index.html         # Frontend UI entry point
+│   ├── script.js          # UI interactivity
+│   └── style.css          # UI styling
+├── requirements.txt       # Python dependencies
 ├── README.md              # This file
 ├── Backend/
 │   ├── app.py             # FastAPI server
